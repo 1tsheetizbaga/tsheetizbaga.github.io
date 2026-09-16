@@ -358,3 +358,189 @@ print("-----------------------------------")
 print("HTML ARTICLE CREATED")
 print("-----------------------------------")
 print(article_path)
+# -----------------------------------
+# Update homepage
+# -----------------------------------
+
+def update_homepage():
+
+    posts = []
+
+    if os.path.exists("posts"):
+
+        for filename in os.listdir("posts"):
+
+            if not filename.endswith(".html"):
+                continue
+
+            filepath = os.path.join("posts", filename)
+
+            with open(
+                filepath,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
+                content = f.read()
+
+            # Get title from HTML
+            match = re.search(
+                r"<title>(.*?)</title>",
+                content,
+                re.IGNORECASE
+            )
+
+            if match:
+                title = match.group(1)
+            else:
+                title = filename.replace(
+                    ".html", ""
+                ).replace("-", " ").title()
+
+            # Get description
+            description_match = re.search(
+                r'<meta name="description"\s+content="(.*?)">',
+                content,
+                re.IGNORECASE
+            )
+
+            if description_match:
+                description = description_match.group(1)
+            else:
+                description = "Read the latest AI and technology article."
+
+            posts.append({
+                "title": title,
+                "description": description,
+                "url": "posts/" + filename
+            })
+
+
+    # Newest posts first
+    posts.reverse()
+
+
+    # -----------------------------------
+    # Create article cards
+    # -----------------------------------
+
+    cards = ""
+
+    for post in posts:
+
+        cards += f"""
+        <article class="card">
+
+            <h3>
+                {post["title"]}
+            </h3>
+
+            <p>
+                {post["description"]}
+            </p>
+
+            <a href="{post["url"]}">
+                Read Article →
+            </a>
+
+        </article>
+        """
+
+
+    # -----------------------------------
+    # Create homepage
+    # -----------------------------------
+
+    homepage = f"""<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI & Technology Hub</title>
+
+    <meta name="description"
+          content="AI tools, technology, tutorials and digital insights.">
+
+    <link rel="stylesheet"
+          href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="container">
+
+        <h1>AI & Technology Hub</h1>
+
+        <p>
+            AI tools, technology, tutorials and insights.
+        </p>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="hero">
+
+        <h2>Latest Articles</h2>
+
+        <p>
+            Explore the latest developments in AI
+            and technology.
+        </p>
+
+    </section>
+
+
+    <section class="articles">
+
+        {cards}
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    <div class="container">
+
+        <p>
+            © 2026 AI & Technology Hub
+        </p>
+
+    </div>
+
+</footer>
+
+</body>
+
+</html>
+"""
+
+
+    with open(
+        "index.html",
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(homepage)
+
+
+    print("-----------------------------------")
+    print("HOMEPAGE UPDATED")
+    print("-----------------------------------")
+
+
+update_homepage()
