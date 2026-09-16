@@ -3,23 +3,15 @@ import json
 import time
 import re
 from html import escape
+from urllib.parse import quote
+from urllib.request import Request, urlopen
+
 from google import genai
 
-# -----------------------------------
-# Configuration
-# -----------------------------------
 
-API_KEY = os.environ.get("GEMINI_API_KEY")
-
-if not API_KEY:
-    raise RuntimeError("GEMINI_API_KEY is not set.")
-
-client = genai.Client(api_key=API_KEY)
-
-
-# -----------------------------------
-# Models
-# -----------------------------------
+# ============================================================
+# CONFIG
+# ============================================================
 
 MODELS = [
     "gemini-3.8-flash",
@@ -27,271 +19,329 @@ MODELS = [
     "gemini-3.5-flash-lite",
 ]
 
+API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# -----------------------------------
-# Select topic from discovered topics
-# -----------------------------------
+if not API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is not set")
+
+
+client = genai.Client(api_key=API_KEY)
+
+
+# ============================================================
+# LOAD TOPICS
+# ============================================================
+
+def load_topics():
+    with open("generated/topics.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+# ============================================================
+# SELECT TOPIC
+# ============================================================
 
 def select_topic():
+    topics_data = load_topics()
 
-    with open(
-        "generated/topics.json",
-        "r",
-        encoding="utf-8"
-    ) as f:
+    if not topics_data:
+        raise RuntimeError("No topics found")
 
-        topics = json.load(f)
-
-    if not topics:
-        raise RuntimeError(
-            "No discovered topics available."
-        )
-
-    # Support the new topic format:
-    # {
-    #   "title": "...",
-    #   "source": "...",
-    #   "url": "..."
-    # }
-
-    topic_list = "\n".join(
-        f"{i + 1}. {topic['title']}"
-        for i, topic in enumerate(topics)
-    )
+    topic_titles = [
+        item["title"] if isinstance(item, dict) else item
+        for item in topics_data
+    ]
 
     prompt = f"""
-You are the editorial director of an AI and technology website.
+You are an editor for a modern AI and technology website.
 
 Choose ONE topic from the list below.
 
-The website focuses on:
-- Artificial intelligence
-- AI tools
-- AI models
-- AI video and image generation
-- Automation
-- Software
-- Productivity technology
-- Developer technology
-- Cybersecurity
-- Consumer technology
+Choose the topic that would make the most useful and interesting
+article for readers interested in AI, technology, software,
+automation, productivity, developers, or digital tools.
 
-Avoid:
-- Politics
-- Elections
-- Political personalities
-- Political arguments
-- General wars or geopolitical news
-- Celebrity gossip
-- Topics unrelated to technology
-
-Choose the topic that has the strongest potential for a useful,
-evergreen or timely technology article for digital creators.
-
-Do NOT create a new topic.
-Choose ONLY one topic from the supplied list.
+Return ONLY the exact topic title.
 
 Topics:
 
-{topic_list}
-
-Return ONLY valid JSON:
-
-{{
-  "selected_topic": "exact topic title from the list"
-}}
+{chr(10).join(topic_titles)}
 """
-
-    response = client.models.generate_content(
-        model=MODELS[0],
-        contents=prompt
-    )
-
-    result = response.text.strip()
-
-    if result.startswith("```json"):
-        result = result[7:]
-
-    elif result.startswith("```"):
-        result = result[3:]
-
-    if result.endswith("```"):
-        result = result[:-3]
-
-    result = result.strip()
-
-    selection = json.loads(result)
-
-    selected_title = selection["selected_topic"]
-
-    selected_topic = None
-
-    for topic in topics:
-
-        if topic["title"] == selected_title:
-
-            selected_topic = topic
-            break
-
-    if selected_topic is None:
-
-        raise RuntimeError(
-            "Gemini selected a topic that was not in topics.json."
-        )
-
-    print("-----------------------------------")
-    print("SELECTED TOPIC")
-    print("-----------------------------------")
-    print(selected_topic["title"])
-
-    print("SOURCE")
-    print(selected_topic["source"])
-
-    print("URL")
-    print(selected_topic["url"])
-
-    return selected_topic
-
-
-TOPIC_DATA = select_topic()
-
-TOPIC = TOPIC_DATA["title"]
-
-
-# -----------------------------------
-# Prompt
-# -----------------------------------
-
-def create_prompt():
-
-    return f"""
-You are an expert technology writer.
-
-Write a useful, accurate and original article about:
-
-{TOPIC}
-
-The topic was discovered from this source:
-
-Source: {TOPIC_DATA["source"]}
-URL: {TOPIC_DATA["url"]}
-
-Target audience:
-YouTube creators and digital content creators.
-
-Requirements:
-
-- Create a clear and useful title.
-- Write a strong introduction.
-- Use logical H2 sections.
-- Give practical information.
-- Avoid unnecessary filler.
-- Do not invent statistics.
-- Do not invent prices.
-- Do not invent product features.
-- Do not make unsupported claims.
-- Do not mention that AI wrote the article.
-- Write naturally.
-- Return ONLY valid JSON.
-
-Use exactly this structure:
-
-{{
-  "title": "Article title",
-  "description": "Meta description",
-  "category": "AI",
-  "keywords": [
-    "keyword 1",
-    "keyword 2",
-    "keyword 3"
-  ],
-  "introduction": "Introduction",
-  "sections": [
-    {{
-      "heading": "Section heading",
-      "content": "Section content"
-    }}
-  ],
-  "conclusion": "Conclusion"
-}}
-"""
-
-
-# -----------------------------------
-# Generate article
-# -----------------------------------
-
-def generate_article():
-
-    prompt = create_prompt()
 
     for model in MODELS:
-
-        print("-----------------------------------")
-        print(f"Trying model: {model}")
-        print("-----------------------------------")
-
-        for attempt in range(1, 3):
-
+        for attempt in range(2):
             try:
-
-                print(
-                    f"Attempt {attempt}/2 using {model}"
-                )
-
                 response = client.models.generate_content(
                     model=model,
                     contents=prompt
                 )
 
-                result = response.text.strip()
+                selected = response.text.strip().strip('"')
 
-                # Remove markdown code fences
-                if result.startswith("```json"):
-                    result = result[7:]
+                for item in topics_data:
+                    title = item["title"] if isinstance(item, dict) else item
 
-                elif result.startswith("```"):
-                    result = result[3:]
+                    if title.lower() == selected.lower():
+                        return item if isinstance(item, dict) else {
+                            "title": item,
+                            "source": "",
+                            "url": ""
+                        }
 
-                if result.endswith("```"):
-                    result = result[:-3]
+                # Fallback if Gemini slightly changes the title
+                for item in topics_data:
+                    title = item["title"] if isinstance(item, dict) else item
 
-                result = result.strip()
+                    if selected.lower() in title.lower():
+                        return item if isinstance(item, dict) else {
+                            "title": item,
+                            "source": "",
+                            "url": ""
+                        }
 
-                article = json.loads(result)
+            except Exception as e:
+                print(f"Topic selection failed with {model}: {e}")
+                time.sleep(10)
 
-                print(
-                    f"SUCCESS: Article generated with {model}"
+    # Final fallback
+    first = topics_data[0]
+
+    return first if isinstance(first, dict) else {
+        "title": first,
+        "source": "",
+        "url": ""
+    }
+
+
+TOPIC_DATA = select_topic()
+TOPIC = TOPIC_DATA["title"]
+
+print("Selected topic:", TOPIC)
+
+
+# ============================================================
+# GENERATE ARTICLE
+# ============================================================
+
+article_prompt = f"""
+Write a high-quality article for a modern AI and technology website.
+
+Topic:
+{TOPIC}
+
+The topic was discovered from:
+
+Source:
+{TOPIC_DATA.get("source", "")}
+
+URL:
+{TOPIC_DATA.get("url", "")}
+
+Create an informative article for general readers.
+
+Return ONLY valid JSON.
+
+Use exactly this structure:
+
+{{
+  "title": "article title",
+  "description": "short SEO description",
+  "category": "AI",
+  "keywords": ["keyword 1", "keyword 2", "keyword 3"],
+  "introduction": "introduction paragraph",
+  "sections": [
+    {{
+      "heading": "section heading",
+      "content": "section content"
+    }},
+    {{
+      "heading": "section heading",
+      "content": "section content"
+    }},
+    {{
+      "heading": "section heading",
+      "content": "section content"
+    }}
+  ],
+  "conclusion": "conclusion paragraph"
+}}
+
+Requirements:
+
+- Do not invent facts.
+- Keep the article useful and readable.
+- Use clear headings.
+- Avoid political content.
+- Avoid exaggerated claims.
+- Do not include markdown.
+- Return JSON only.
+"""
+
+
+def generate_article():
+
+    for model in MODELS:
+
+        for attempt in range(2):
+
+            try:
+
+                response = client.models.generate_content(
+                    model=model,
+                    contents=article_prompt
                 )
 
-                return article
+                text = response.text.strip()
+
+                # Remove accidental markdown fences
+                text = re.sub(
+                    r"^```json\s*",
+                    "",
+                    text,
+                    flags=re.IGNORECASE
+                )
+
+                text = re.sub(
+                    r"\s*```$",
+                    "",
+                    text
+                )
+
+                return json.loads(text)
 
             except Exception as e:
 
                 print(
-                    f"{model} attempt {attempt} failed:"
+                    f"Article generation failed "
+                    f"with {model}: {e}"
                 )
 
-                print(str(e))
+                time.sleep(10)
 
-                if attempt == 1:
+    raise RuntimeError("All article generation attempts failed")
 
-                    print(
-                        "Waiting 10 seconds before retry..."
-                    )
-
-                    time.sleep(10)
-
-    raise RuntimeError(
-        "All Gemini models failed."
-    )
-
-
-# -----------------------------------
-# Save article
-# -----------------------------------
 
 article = generate_article()
+
+
+# ============================================================
+# FIND IMAGE FROM OPENVERSE
+# ============================================================
+
+def find_image(topic):
+
+    print("Searching Openverse for image:", topic)
+
+    # Simplify the search query
+    query = topic
+
+    api_url = (
+        "https://api.openverse.org/v1/images/"
+        f"?q={quote(query)}"
+        "&page_size=10"
+    )
+
+    try:
+
+        request = Request(
+            api_url,
+            headers={
+                "User-Agent": "AI-Tech-Blog/1.0"
+            }
+        )
+
+        with urlopen(request, timeout=30) as response:
+
+            data = json.loads(
+                response.read().decode("utf-8")
+            )
+
+        results = data.get("results", [])
+
+        if not results:
+            print("No Openverse images found.")
+            return None
+
+        # Prefer images with useful dimensions
+        results = sorted(
+            results,
+            key=lambda x: (
+                x.get("width", 0) or 0
+            ),
+            reverse=True
+        )
+
+        for item in results:
+
+            image_url = item.get("url")
+
+            if not image_url:
+                continue
+
+            width = item.get("width") or 0
+            height = item.get("height") or 0
+
+            # Avoid tiny images
+            if width and width < 600:
+                continue
+
+            creator = (
+                item.get("creator")
+                or "Unknown creator"
+            )
+
+            title = (
+                item.get("title")
+                or topic
+            )
+
+            license_name = (
+                item.get("license")
+                or "Open license"
+            )
+
+            landing_url = (
+                item.get("foreign_landing_url")
+                or ""
+            )
+
+            return {
+                "url": image_url,
+                "title": title,
+                "creator": creator,
+                "license": license_name,
+                "landing_url": landing_url,
+                "width": width,
+                "height": height
+            }
+
+        return None
+
+    except Exception as e:
+
+        print("Image search failed:", e)
+
+        return None
+
+
+image = find_image(TOPIC)
+
+if image:
+    print("Image found:", image["url"])
+else:
+    print("Continuing without image.")
+
+
+# ============================================================
+# SAVE ARTICLE JSON
+# ============================================================
+
+article["image"] = image
+
+article["source"] = {
+    "name": TOPIC_DATA.get("source", ""),
+    "url": TOPIC_DATA.get("url", "")
+}
 
 os.makedirs("generated", exist_ok=True)
 
@@ -308,24 +358,12 @@ with open(
         indent=2
     )
 
-print("-----------------------------------")
-print("ARTICLE GENERATED SUCCESSFULLY")
-print("-----------------------------------")
 
-print(
-    json.dumps(
-        article,
-        ensure_ascii=False,
-        indent=2
-    )
-)
+# ============================================================
+# CREATE SLUG
+# ============================================================
 
-
-# -----------------------------------
-# Create slug
-# -----------------------------------
-
-def create_slug(title):
+def make_slug(title):
 
     slug = title.lower()
 
@@ -350,81 +388,162 @@ def create_slug(title):
     return slug.strip("-")
 
 
-# -----------------------------------
-# Create article HTML
-# -----------------------------------
+slug = make_slug(
+    article["title"]
+)
+
+if not slug:
+
+    slug = "ai-technology-article"
+
+
+# ============================================================
+# ARTICLE HTML
+# ============================================================
 
 def create_article_html(article):
 
     title = escape(article["title"])
-    description = escape(article["description"])
-    category = escape(article["category"])
-    introduction = escape(article["introduction"])
-    conclusion = escape(article["conclusion"])
+
+    description = escape(
+        article.get("description", "")
+    )
+
+    category = escape(
+        article.get("category", "Technology")
+    )
+
+    introduction = escape(
+        article.get("introduction", "")
+    )
+
+    conclusion = escape(
+        article.get("conclusion", "")
+    )
 
     sections_html = ""
 
-    for section in article["sections"]:
+    for section in article.get("sections", []):
 
-        heading = escape(section["heading"])
-        content = escape(section["content"])
+        heading = escape(
+            section.get("heading", "")
+        )
 
-        paragraphs = content.split("\n")
-
-        content_html = ""
-
-        for paragraph in paragraphs:
-
-            if paragraph.strip():
-
-                content_html += (
-                    f"<p>{paragraph.strip()}</p>\n"
-                )
+        content = escape(
+            section.get("content", "")
+        )
 
         sections_html += f"""
-        <section>
+        <section class="article-section">
             <h2>{heading}</h2>
-            {content_html}
+            <p>{content}</p>
         </section>
         """
 
-    html = f"""<!DOCTYPE html>
+    # --------------------------------------------------------
+    # IMAGE HTML
+    # --------------------------------------------------------
+
+    image_html = ""
+
+    if article.get("image"):
+
+        img = article["image"]
+
+        image_url = escape(
+            img.get("url", "")
+        )
+
+        image_title = escape(
+            img.get("title", article["title"])
+        )
+
+        creator = escape(
+            img.get("creator", "Unknown creator")
+        )
+
+        license_name = escape(
+            img.get("license", "Open license")
+        )
+
+        landing_url = escape(
+            img.get("landing_url", "")
+        )
+
+        credit = f"Image: {creator} · {license_name}"
+
+        if landing_url:
+
+            credit_html = f"""
+            <a href="{landing_url}"
+               target="_blank"
+               rel="noopener noreferrer">
+                {credit}
+            </a>
+            """
+
+        else:
+
+            credit_html = credit
+
+        image_html = f"""
+        <figure class="article-hero-image">
+
+            <img
+                src="{image_url}"
+                alt="{image_title}"
+                loading="eager"
+            >
+
+            <figcaption>
+                {credit_html}
+            </figcaption>
+
+        </figure>
+        """
+
+    # --------------------------------------------------------
+    # FULL HTML
+    # --------------------------------------------------------
+
+    return f"""<!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>{title}</title>
 
-    <meta name="description"
-          content="{description}">
+    <meta
+        name="description"
+        content="{description}"
+    >
 
-    <meta property="og:title"
-          content="{title}">
-
-    <meta property="og:description"
-          content="{description}">
-
-    <meta name="robots"
-          content="index, follow">
-
-    <link rel="stylesheet"
-          href="../style.css">
+    <link
+        rel="stylesheet"
+        href="../style.css"
+    >
 
 </head>
 
 <body>
 
-<header>
+<header class="site-header">
 
     <div class="container header-inner">
 
-        <a href="../index.html" class="logo">
-            AI <span>&</span> Technology Hub
+        <a
+            href="../index.html"
+            class="logo"
+        >
+            AI <span>&</span> Technology
         </a>
 
         <nav>
@@ -433,7 +552,7 @@ def create_article_html(article):
                 Home
             </a>
 
-            <a href="../index.html#articles">
+            <a href="../index.html#latest">
                 Latest
             </a>
 
@@ -448,31 +567,37 @@ def create_article_html(article):
 </header>
 
 
-<main class="container article-page">
+<main class="article-page">
 
-    <article>
+    <div class="container">
 
-        <div class="category">
+        <div class="article-category">
             {category}
         </div>
 
-        <h1>{title}</h1>
+        <h1>
+            {title}
+        </h1>
 
         <p class="article-description">
             {description}
         </p>
 
+        {image_html}
+
         <div class="article-content">
 
-            <p>
+            <p class="article-introduction">
                 {introduction}
             </p>
 
             {sections_html}
 
-            <section>
+            <section class="article-section">
 
-                <h2>Conclusion</h2>
+                <h2>
+                    Conclusion
+                </h2>
 
                 <p>
                     {conclusion}
@@ -482,21 +607,17 @@ def create_article_html(article):
 
         </div>
 
-    </article>
+    </div>
 
 </main>
 
 
-<footer>
+<footer class="footer">
 
-    <div class="container footer-inner">
-
-        <p>
-            © 2026 AI & Technology Hub
-        </p>
+    <div class="container">
 
         <p>
-            AI • Technology • Innovation
+            © 2026 AI & Technology
         </p>
 
     </div>
@@ -508,20 +629,14 @@ def create_article_html(article):
 </html>
 """
 
-    return html
 
-
-# -----------------------------------
-# Create HTML article
-# -----------------------------------
-
-slug = create_slug(article["title"])
+# ============================================================
+# SAVE ARTICLE PAGE
+# ============================================================
 
 os.makedirs("posts", exist_ok=True)
 
 article_path = f"posts/{slug}.html"
-
-html = create_article_html(article)
 
 with open(
     article_path,
@@ -529,158 +644,213 @@ with open(
     encoding="utf-8"
 ) as f:
 
-    f.write(html)
-
-print("-----------------------------------")
-print("HTML ARTICLE CREATED")
-print("-----------------------------------")
-
-print(article_path)
+    f.write(
+        create_article_html(article)
+    )
 
 
-# -----------------------------------
-# Update homepage
-# -----------------------------------
+print("Article created:", article_path)
 
-def update_homepage():
+
+# ============================================================
+# HOMEPAGE
+# ============================================================
+
+def generate_homepage():
+
+    posts_dir = "posts"
 
     posts = []
 
-    if os.path.exists("posts"):
+    for filename in os.listdir(posts_dir):
 
-        for filename in os.listdir("posts"):
+        if not filename.endswith(".html"):
+            continue
 
-            if not filename.endswith(".html"):
-                continue
+        path = os.path.join(
+            posts_dir,
+            filename
+        )
 
-            filepath = os.path.join(
-                "posts",
-                filename
-            )
+        try:
 
             with open(
-                filepath,
+                path,
                 "r",
                 encoding="utf-8"
             ) as f:
 
-                content = f.read()
+                html = f.read()
 
-            # Get title
-            match = re.search(
-                r"<title>(.*?)</title>",
-                content,
-                re.IGNORECASE
+            title_match = re.search(
+                r"<h1>(.*?)</h1>",
+                html,
+                re.S
             )
 
-            if match:
-
-                title = match.group(1)
-
-            else:
-
-                title = filename.replace(
-                    ".html",
-                    ""
-                ).replace(
-                    "-",
-                    " "
-                ).title()
-
-            # Get description
             description_match = re.search(
-                r'<meta name="description"\s+content="(.*?)">',
-                content,
-                re.IGNORECASE
+                r'<p class="article-description">(.*?)</p>',
+                html,
+                re.S
             )
 
-            if description_match:
+            category_match = re.search(
+                r'<div class="article-category">(.*?)</div>',
+                html,
+                re.S
+            )
 
-                description = description_match.group(1)
+            image_match = re.search(
+                r'<img\s+src="([^"]+)"',
+                html
+            )
 
-            else:
+            title = (
+                title_match.group(1).strip()
+                if title_match
+                else filename
+            )
 
-                description = (
-                    "Read the latest AI and technology article."
-                )
+            description = (
+                description_match.group(1).strip()
+                if description_match
+                else ""
+            )
+
+            category = (
+                category_match.group(1).strip()
+                if category_match
+                else "Technology"
+            )
+
+            image_url = (
+                image_match.group(1)
+                if image_match
+                else ""
+            )
 
             posts.append({
+                "filename": filename,
                 "title": title,
                 "description": description,
-                "url": "posts/" + filename
+                "category": category,
+                "image": image_url
             })
 
+        except Exception as e:
 
-    # Newest posts first
+            print(
+                f"Could not read {filename}: {e}"
+            )
+
+
     posts.reverse()
-
-
-    # -----------------------------------
-    # Create article cards
-    # -----------------------------------
 
     cards = ""
 
-    for post in posts:
+    for post in posts[:12]:
 
-        cards += f"""
-        <article class="card">
+        image_html = ""
 
-            <div class="card-category">
+        if post["image"]:
+
+            image_html = f"""
+            <img
+                src="{post["image"]}"
+                alt="{post["title"]}"
+                loading="lazy"
+            >
+            """
+
+        else:
+
+            image_html = """
+            <div class="card-image-placeholder">
                 AI & Technology
             </div>
+            """
 
-            <h3>
-                {post["title"]}
-            </h3>
+        cards += f"""
 
-            <p>
-                {post["description"]}
-            </p>
+        <article class="card">
 
-            <a href="{post["url"]}">
-                Read Article →
+            <a href="posts/{post["filename"]}">
+
+                <div class="card-image">
+
+                    {image_html}
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="card-category">
+                        {post["category"]}
+                    </div>
+
+                    <h3>
+                        {post["title"]}
+                    </h3>
+
+                    <p>
+                        {post["description"]}
+                    </p>
+
+                    <span class="read-more">
+                        Read Article →
+                    </span>
+
+                </div>
+
             </a>
 
         </article>
+
         """
 
 
-    # -----------------------------------
-    # Create homepage
-    # -----------------------------------
-
     homepage = f"""<!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>AI & Technology Hub</title>
+    <title>
+        AI & Technology
+    </title>
 
-    <meta name="description"
-          content="AI tools, technology, tutorials and digital insights for creators and developers.">
+    <meta
+        name="description"
+        content="AI, technology, software, automation and digital innovation."
+    >
 
-    <meta name="robots"
-          content="index, follow">
-
-    <link rel="stylesheet"
-          href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
 </head>
 
+
 <body>
 
-<header>
+
+<header class="site-header">
 
     <div class="container header-inner">
 
-        <a href="index.html" class="logo">
-            AI <span>&</span> Technology Hub
+        <a
+            href="index.html"
+            class="logo"
+        >
+            AI <span>&</span> Technology
         </a>
 
         <nav>
@@ -689,7 +859,7 @@ def update_homepage():
                 Home
             </a>
 
-            <a href="#articles">
+            <a href="#latest">
                 Latest
             </a>
 
@@ -704,31 +874,37 @@ def update_homepage():
 </header>
 
 
-<main>
+<section class="hero">
 
-    <section class="hero">
+    <div class="container">
 
-        <div class="container">
-
-            <div class="hero-label">
-                AI & Technology
-            </div>
-
-            <h1>
-                The latest in AI, technology and digital innovation.
-            </h1>
-
-            <p>
-                Practical insights, tools, tutorials and technology news
-                for creators, developers and curious minds.
-            </p>
-
+        <div class="hero-label">
+            AI & TECHNOLOGY
         </div>
 
-    </section>
+        <h1>
+            The latest in AI,
+            technology and
+            digital innovation.
+        </h1>
+
+        <p>
+            Practical insights, tools,
+            tutorials and technology
+            news for curious minds.
+        </p>
+
+    </div>
+
+</section>
 
 
-    <section class="container" id="articles">
+<section
+    class="articles"
+    id="latest"
+>
+
+    <div class="container">
 
         <div class="section-header">
 
@@ -736,57 +912,60 @@ def update_homepage():
                 Latest Articles
             </h2>
 
+            <span>
+                Updated automatically
+            </span>
+
         </div>
 
 
-        <section class="articles">
+        <div class="articles-grid">
 
             {cards}
 
-        </section>
-
-    </section>
-
-
-    <section class="container" id="about">
-
-        <div class="hero">
-
-            <div class="hero-label">
-                About
-            </div>
-
-            <h2>
-                AI & Technology Hub
-            </h2>
-
-            <p>
-                Exploring useful developments in artificial intelligence,
-                software, automation, digital tools and emerging technology.
-            </p>
-
         </div>
 
-    </section>
+    </div>
 
-</main>
+</section>
 
 
-<footer>
+<section
+    class="about"
+    id="about"
+>
 
-    <div class="container footer-inner">
+    <div class="container">
+
+        <h2>
+            About
+        </h2>
 
         <p>
-            © 2026 AI & Technology Hub
+            AI & Technology explores
+            artificial intelligence,
+            software, automation,
+            digital tools and the
+            technologies shaping the future.
         </p>
 
+    </div>
+
+</section>
+
+
+<footer class="footer">
+
+    <div class="container">
+
         <p>
-            AI • Technology • Innovation
+            © 2026 AI & Technology
         </p>
 
     </div>
 
 </footer>
+
 
 </body>
 
@@ -803,9 +982,6 @@ def update_homepage():
         f.write(homepage)
 
 
-    print("-----------------------------------")
-    print("HOMEPAGE UPDATED")
-    print("-----------------------------------")
+generate_homepage()
 
-
-update_homepage()
+print("Homepage updated successfully.")
