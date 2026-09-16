@@ -31,6 +31,10 @@ jobs:
         run: |
           python scripts/discover_topic.py
 
+            - name: Discover topics
+        run: |
+          python scripts/discover_topic.py
+
       - name: Generate article
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
