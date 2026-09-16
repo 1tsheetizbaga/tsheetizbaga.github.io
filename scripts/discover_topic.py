@@ -83,9 +83,51 @@ for feed_url in FEEDS:
 
 
 # -----------------------------------
-# Keep first 20 topics
+# Filter topics
 # -----------------------------------
 
+BLOCKED_WORDS = [
+    "Trump",
+    "Biden",
+    "Sanders",
+    "Senate",
+    "Congress",
+    "election",
+    "Democrat",
+    "Republican",
+    "politics",
+    "political",
+    "regulation",
+    "bipartisan",
+    "China",
+    "Iran",
+    "Israel",
+    "war",
+    "Ukraine",
+    "Russia",
+]
+
+
+def is_relevant(topic):
+
+    topic_lower = topic.lower()
+
+    for word in BLOCKED_WORDS:
+
+        if word.lower() in topic_lower:
+            return False
+
+    return True
+
+
+topics = [
+    topic
+    for topic in topics
+    if is_relevant(topic)
+]
+
+
+# Keep first 20 relevant topics
 topics = topics[:20]
 
 
