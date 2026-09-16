@@ -1,22 +1,102 @@
 [
-  "Could AI really wipe out humanity – six experts spell out the risks",
-  "AI models chatting in ‘surreal’ dialect mixing poetic language and tech bro jargon",
-  "Cruz and Hawley shut down antitrust exemptions for AI companies - Live Updates",
-  "As campaign season gears up, AI-generated ads are everywhere",
-  "The World’s Most Reliable AI Detector Has a Human Problem",
-  "Meta CEO Mark Zuckerberg sides with Nvidia's Huang on AI safety and slowdown debate",
-  "Exclusive: OpenAI launches road tour to educate older Americans on AI",
-  "We Must Pace the Frontier",
-  "The turbulent AI era is here. The choices we make now are critical.",
-  "McKinsey Technology Trends Outlook 2026",
-  "Poll: Americans say there’s a serious risk of AI destroying humanity",
-  "Sam Altman confident AI industry can handle safety risks",
-  "Why AI’s Biggest Rivals Are Suddenly Calling for Restraint",
-  "Texas Tech Professor Integrates AI and Human Creativity into Education",
-  "AI rivals found rare agreement on safety. Putting it into practice is harder - ABC News",
-  "In wake of University’s report on AI, here’s how three classes cover the technology",
-  "Bill Gates Says No Government Is Ready for the Changes AI Will Bring",
-  "UK supermarket using AI technology to monitor cow welfare on its supplier pool",
-  "Tech leaders are debating how risky AI is. What does Bill Gates think?",
-  "Economic Development to Host Small Business Workshop on Utilizing AI"
+  {
+    "title": "As the politicians play catchup the tech bros agree: we may only have a decade left | John Crace",
+    "source": "The Guardian",
+    "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQMC15OUhlaHdBcXgtbTFnb1FQMlVqQURXUGtiM2ttbXR3NWRKODJQVE1kMkF0QXI0czc3V3hKZEdJUXFoLWRWLS1lLVpDN0JmcG5HUHkxeFY0MHkxb3l3Q2FOeDdfR1pWUlljbmtjNzNabUJyV19zc2k3T25DXzBTdk9WaHBSVTRzNTNqUlVnT0JrLWRHRXdVMF9IaUR1a0JpckZOQTZXVQ?oc=5"
+  },
+  {
+    "title": "The Liftoff Scenario That Terrifies A.I. Doomsayers",
+    "source": "The New York Times",
+    "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQUFBzNEsya0lCSHdGM0ZCaDlVRG1rOWRnRWVxZXBfbmZTNWhKeWFDbG4yVjRMWWxPejROOHV5VnZCMDY5WVJxTXpJRmlySlVBRkRjN2J1ZWtESURFSG5MX3BTU0twSmhXeHlUZHduR2NoR0t0Tzg4Ri1qRU9FcUxKMnFEdw?oc=5"
+  },
+  {
+    "title": "Inside the campaign to convince Washington that AI could end human life",
+    "source": "The Washington Post",
+    "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOWHlzQkZTYTR2VnNCaU9wYU5OUURIWWpyWEFuQ2VqRUdMbkdVQkNlSy1IUmhkcURKS3ZiOTBPcVV2V2R0S0pnaEJjek1zQ0ZGeXdQczZWTjhtbHFhNHUySUJEUldOZ2d0TFdJMUVZNHhoMVpSODAxaW5UN1BWTWlFV3lJRmJVVE11S3ZXWld6eHlXOXdQQVVlaE9zOUF1enNiTlZBYWZZRDRvOF83aWlMXzBKNWs4VHpObGc?oc=5"
+  },
+  {
+    "title": "AI models chatting in ‘surreal’ dialect mixing poetic language and tech bro jargon",
+    "source": "The Guardian",
+    "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNekxRWVI4d3pDbGhDMnUtVlNRYXVzWHVzcEJ2dlBBNlBmZ2JGQWFkTFM2TWlYQW1GOXBuZWRWbndSR0doZFpXTTJjczIxd0hqUVhfVlZzakhfWnZFOFQxMGZCMkNEcnhWUDlhTGlkQ1hXaEpyN1Nta1A3YW81R3g1OUYtZEFaeHZVbG1JV2JTR0FlOVNKX0FyRHhmMjMtYTlvelNHVk11RXAyS2pEVE5TQVB3?oc=5"
+  },
+  {
+    "title": "Could AI really wipe out humanity – six experts spell out the risks",
+    "source": "The Guardian",
+    "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOa3puUXRFSE5YY01MaFJkQkNjYXh3QkJKMWVUdUJmcHNaeHRxWm5Nd3AwZzRwVTMxa2Iya1ZyX0ozV0hoNEtyVjJzWnFoN1dKZ2JRaDl6Nk54ZmNwQlZFRmE4MVZWSGx5R0F5bUZqczJPSDhSd19OZXhTbHNoek5XRGVuUVN0MHVCdV82VUhNZmQzcmNralltaEpvUnZ6NmNhVldqaVFtdXZENWc5?oc=5"
+  },
+  {
+    "title": "Meta CEO Mark Zuckerberg sides with Nvidia's Huang on AI safety and slowdown debate",
+    "source": "cnbc.com",
+    "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQamJwVnJmQjRaczZCX3ZrNkktNHJ2cWtsZk13cGZsZWwwaVJPMHRhVmtiZjY1OXNkclU4RmN1OElzRFdRSm9DeWF3dHFtSjE3Q3BIMG8yX25vdkhJdXJJQUI5OTRma2pFRjViVnlfekZMMXl5X2RnRVd5VmxEY2FNbWdUaHJJMTRwTk5pSTFMOF80SjRQVVp2SG5n0gGfAUFVX3lxTE9BaENab2dUdmlkWGJ2TzJVT0V2eDRLakRpdFh0c05zb1lkQ29hMW5XcWw1VU1vdmJMSmtVcFp1Y1JjSXh6SWZkOEF4YXpZMWlCR3c4b0VnbW9aX1c4NG9OWjYwVkE4NHh1UENkVVdRdlBIbGVJYl96TEFNdC1zS05Lbkw3NGIxTnF3QmZhWlVhenU4am9zak16QUM3bDJMNA?oc=5"
+  },
+  {
+    "title": "Building AI to accelerate science and improve lives",
+    "source": "blog.google",
+    "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPcU1Eb1R4ZGdSYlVlV3ctdG5tVVpEYlFNWjFxY1lJSlZNNW1laFhXUDI0aFZhSjlxWkhPN3JUNy1xQm56WVFOaFJiWFotMGtFNEo5YTVMSnBNTlRoekJHellCS0hqeXA3cWZnYkc2U2NtVjBDblFlU1JvVVlxdzc2dzNpR1pKSUM4MVNB?oc=5"
+  },
+  {
+    "title": "We Must Pace the Frontier",
+    "source": "darioamodei.com",
+    "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFByRm5SZWdmLXZJN2RBM2hteVFFT0F2Qk5GVFozVEFmZHlaRVhYRmJNZ1pOS1I3MGstU1JvQldUeklNYjBUcDRGLTdDMGpnMzk5VTlxS0k4anFpRzFpMWhGeTBMYVY?oc=5"
+  },
+  {
+    "title": "The turbulent AI era is here. The choices we make now are critical.",
+    "source": "Gates Notes",
+    "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5vNHRZblJwZHNZZEZfZ285LUdncWl0YUk0UHVfTDM1b05YSU9rVHRhYUpkQ1VwV1RJaXZ4SzZwV2dBd2ZYeEZtbUpGNkpDdng5WjRTa28yOVdIM3drTERSVVVoeWI0WnpWT3dQbGVQcVhvdEZIZE1oaTB4cHdRb0E?oc=5"
+  },
+  {
+    "title": "McKinsey Technology Trends Outlook 2026",
+    "source": "McKinsey & Company",
+    "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOS0wzb1RmNmZPeVB4QjdSZTVmcmxMVUwyT2pSYVliQVQwZ25mUFpoWlFXdGFpWnNJLVdmMncwc0twU2pxSmplU2k0WGFuRWlIT1BFQ1FzWVlCbWc2MWpzamF0LU51NVBSNURBeWhUN0VxYlA1VjMzUk16eHlBQlJ2R3F2TXAzaW9SczJId2hn?oc=5"
+  },
+  {
+    "title": "Sam Altman confident AI industry can handle safety risks",
+    "source": "Axios",
+    "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE4ySEdPU0ZjQXJnYjhMbDdNN2t4dEdhcHlub1kwaXRpM1ViRFRkcHBPbDl3cWJGSFNMc084V1g5clBleUQyOXp6X3ZKa1o3dFhyaHQ5aXUycG9PdlRtaG1wUlNaZkRuaWs?oc=5"
+  },
+  {
+    "title": "Poll: Americans say there’s a serious risk of AI destroying humanity",
+    "source": "Politico",
+    "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNNUc0MTYzZ2FSRUQ0c0doT3lBUl9yV3FzVG5VVFhFSFNLaFdOMjdsdmM5d1hYWEVkWkE1MU1ZRFpWSEU0Q2VkZmR5NnZwVVBCMFQwd1k2dGhXT1V0R1Z2NmxLRm5pRHcwdEpPdk1yUW5ObTZNcnJYNzZ4aGJFWGJkTktBSUticDhpemtnUjR4cGhjemtmN0J4ajZnclU?oc=5"
+  },
+  {
+    "title": "As campaign season gears up, AI-generated ads are everywhere",
+    "source": "NPR",
+    "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPa2Q0X3JGcEZ5S2JsTk5nRGhNSjdmTjlrTTJyX2ZKNmdLeG9aeTVCTlF1eG9TaUwwTmJSUzVicS1LT29YVzNuMjZpYVl1NEh5N1REaVhMcVF2Z29JamFkRVFzQnE4SmZEdzMwV3NuZ0poYks5RW0taWl3OThKdmgzeA?oc=5"
+  },
+  {
+    "title": "Why AI’s Biggest Rivals Are Suddenly Calling for Restraint",
+    "source": "Council on Foreign Relations",
+    "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQUXdhUHVFdTY0X05rQTRNLVpuaVMtSUVwMjJlaU5lZXNsOUJqdnpPY0ozblhzaDZSUHQzWGwyUlJudmg5ZS1zam1fcldwOVM0Q0VQYWFUR0Ezc293V0x2dDk3X09raWFGWU9iODkwWHp2dU1OT2JBdWNjUE1PVmVVcnRVMjNjZ2h0dXR5c1d2SQ?oc=5"
+  },
+  {
+    "title": "AI will not wipe out humanity: Nvidia backed tech CEO declares",
+    "source": "Yahoo Finance",
+    "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxOc3VDVC1qMmJjQXItTVFjVjBucUFoZXpjWnBIZHZDMnRLQ3NTY2FDa0NDQktYY2dNYkEtZUYtc0lieU4tRW1tM1dBZkZaTXRPT2pHOVIxWlUyV1NjZlJubUtSVjRucV9NeFdrRW9uUXk5MEFyZFlPdEQ0clY0TmgwQXZhWGhyYmU0VEd5NTZ0ZmlmMW9SRzlhT2JpcER6WFFONG5KUE9pRW9XeHZFd0xFMlBYUHprWlNyY3c4cGlR?oc=5"
+  },
+  {
+    "title": "In wake of University’s report on AI, here’s how three classes cover the technology",
+    "source": "Brown Daily Herald",
+    "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPa3V5dmhrM1BtUnpVdXE3dWt2OTFLUGxOdkdHZzRua2Njam1xc19vakxKakFlZ3AzN3pEYVpOYnpvLXlDOHViNkx1SlVGQXBJTU9FaTlvRUZCX0lGN2VfZm1BcUxHSXNVXzFieWN4eXFGdENSdi0yX3pqVkNPVmoyZ08wZFhacFVxYXlrallTR2YwZGRTbkI0Yi04TEFrSzNpVGxIN01qd3RpdG1yMFJWV09wRGhJVlhHZXpMRG00NDh0TElsanZHWFd3?oc=5"
+  },
+  {
+    "title": "Texas Tech Professor Integrates AI and Human Creativity into Education",
+    "source": "Texas Tech University",
+    "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQc0MwQlRKSTItZS1lTGtEbmNTT21LUHhsM3c4d2I2cWhmdFF2b0pUa3l1OGNuZTBBRHd0V1V5bnROV05rTG9WamV5RVJMR2dDcFZwcjRmckEwMDVGRHlHeFMtRXMzR2lya2MyWjQweU1SSF8xU3U5ZVR3MmY3WWN3RV9BUU5iZEg1bFV0c1Bicm53ZTNQc2xLZlk5bXlPcWFrelNoS2JZNVFBNldOMXdBODJ3?oc=5"
+  },
+  {
+    "title": "AI rivals found rare agreement on safety. Putting it into practice is harder - ABC News",
+    "source": "ABC News - Breaking News, Latest News and Videos",
+    "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOd05oRmxXN3Y3eXpBanJodGVEbEFfNnJ6VGVmR2ozQ1VzdU9LUWR5TUR4VXFUS0I0TWFkeFdKSW5NdUFyaTlXODlGTzlNbE54NEdEeXh2NkxLRkViOExscGo5Z1hVbzNPa1RXWHhwOGctdzR4blRYX2E2bkliQ2xOUXBPUzhVbl92czUwUFdGMjNybS1qNHc1cHA1WjRsNnljZHlOOVpOTVrSAa4BQVVfeXFMTzczVmttajhfRi01cU40TlNXbGUzSUtfaWFhSjRqSldMZGFMeFVpS3BVVVVmdGZpLVcxZl9jb1JlR0dlcWpFNnlrd1o1SWY4LVViNDhpOTVFRDBXdk5ULXA1ZkxGVktidWFuMkZLTEhrOTZzcEVoTFRzU1drbkZJOXZvdkpCVnRvX2JtZWJSci1GdjJEc3lKbUJTV3RhWGl4VEhTRGprSk9odmJDWkdB?oc=5"
+  },
+  {
+    "title": "Bill Gates Says No Government Is Ready for the Changes AI Will Bring",
+    "source": "Technology Org",
+    "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPTWhTUUI4LWs5X1hlbFJZU3hnZW5ER2lFalNESlFva3o4bFBBNzZ6S0RMYnBHQVVrZ0dTeFFOQ29ydjE3VmlramR1cUpfNXVtQ0pOYnJDRUlmN2M0QTJvTlM5R2JnTTktQy1CU1pPMzhYejhFSWpYeGhQY21tdnd1eVlVNWxUYjM3SF9zUS1pRUJ1OG1TTWRVb002dw?oc=5"
+  },
+  {
+    "title": "Tech leaders are debating how risky AI is. What does Bill Gates think?",
+    "source": "NPR",
+    "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNdHdvX3pGOGd4Mnk3aHZ4a21vOExyZFltOVpna0hPQ1EyUTVqYlByak4yUURKWExxMmg2VExVX0tPNmZ5dG5pVDNndDFWX25PWXctYUZrOVZWQVFWbmNCM1RPODdqYTJNQk5id1JxSGFnUlloSk55V1NqOHlULUlLX2tWNGdSV1VfWFBqSFVUU2ZZSWxoSEdYUktJZHQxUm1ySXRtWGhQOGR6eWhUbXFBYjdGUQ?oc=5"
+  }
 ]
