@@ -1,10 +1,7 @@
 import os
 import json
+import time
 from google import genai
-
-# -----------------------------
-# Configuration
-# -----------------------------
 
 API_KEY = os.environ.get("GEMINI_API_KEY")
 
@@ -13,100 +10,120 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
+# Stable Gemini model
 MODEL = "gemini-3.8-flash"
-
-# -----------------------------
-# Topic
-# -----------------------------
 
 TOPIC = "Best AI Video Generators for YouTube Creators"
 
-# -----------------------------
-# Prompt
-# -----------------------------
 
-prompt = f"""
+def generate_article():
+    prompt = f"""
 You are an expert technology writer.
 
 Write a useful, accurate and original article about:
 
 {TOPIC}
 
-The target audience is YouTube creators and digital content creators.
+Target audience:
+YouTube creators and digital content creators.
 
-The article should:
+Requirements:
 
-- Have a clear and interesting title
-- Start with a useful introduction
-- Use logical H2 sections
-- Explain important concepts clearly
-- Avoid unnecessary filler
-- Avoid making unsupported claims
-- Give practical information
-- Have a concise conclusion
-- Be written in natural English
-- Do not mention that AI wrote the article
-- Do not invent statistics, prices, features or company claims
+- Create a clear, useful title.
+- Write a strong introduction.
+- Use logical H2 sections.
+- Give practical information.
+- Avoid filler.
+- Do not invent statistics.
+- Do not invent prices.
+- Do not invent product features.
+- Do not make unsupported claims.
+- Do not mention that AI wrote the article.
+- Write naturally.
+- Return ONLY valid JSON.
 
-Return ONLY valid JSON with this structure:
+Use this exact structure:
 
 {{
   "title": "Article title",
-  "description": "A 150-160 character meta description",
+  "description": "Meta description",
   "category": "AI",
   "keywords": [
     "keyword 1",
     "keyword 2",
     "keyword 3"
   ],
-  "introduction": "Introduction paragraph",
+  "introduction": "Introduction",
   "sections": [
     {{
       "heading": "Section heading",
       "content": "Section content"
     }}
   ],
-  "conclusion": "Conclusion paragraph"
+  "conclusion": "Conclusion"
 }}
 """
 
-# -----------------------------
-# Generate article
-# -----------------------------
-
-response = client.models.generate_content(
-    model=MODEL,
-    contents=prompt
-)
-
-# -----------------------------
-# Parse JSON
-# -----------------------------
-
-try:
-    article = json.loads(response.text)
-except json.JSONDecodeError:
-    print("Gemini returned invalid JSON:")
-    print(response.text)
-    raise
-
-# -----------------------------
-# Save result
-# -----------------------------
-
-os.makedirs("generated", exist_ok=True)
-
-with open(
-    "generated/article.json",
-    "w",
-    encoding="utf-8"
-) as f:
-    json.dump(
-        article,
-        f,
-        ensure_ascii=False,
-        indent=2
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=prompt
     )
 
-print("Article generated successfully.")
-print(json.dumps(article, indent=2, ensure_ascii=False))
+    return response.text
+
+
+# Try up to 3 times if Gemini temporarily returns an error
+for attempt in range(1, 4):
+
+    try:
+        print(f"Generating article... attempt {attempt}/3")
+
+        result = generate_article()
+
+        # Remove accidental markdown code fences
+        result = result.strip()
+
+        if result.startswith("```json"):
+            result = result[7:]
+
+        if result.startswith("```"):
+            result = result[3:]
+
+        if result.endswith("```"):
+            result = result[:-3]
+
+        result = result.strip()
+
+        article = json.loads(result)
+
+        os.makedirs("generated", exist_ok=True)
+
+        with open(
+            "generated/article.json",
+            "w",
+            encoding="utf-8"
+        ) as f:
+            json.dump(
+                article,
+                f,
+                ensure_ascii=False,
+                indent=2
+            )
+
+        print("Article generated successfully.")
+        print(json.dumps(article, indent=2, ensure_ascii=False))
+
+        break
+
+    except Exception as e:
+
+        print(f"Attempt {attempt} failed:")
+        print(e)
+
+        if attempt < 3:
+            print("Waiting 10 seconds before retry...")
+            time.sleep(10)
+
+        else:
+            print("All attempts failed.")
+            raise
