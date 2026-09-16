@@ -49,6 +49,7 @@ def clean_title(title):
 # -----------------------------------
 
 topics = []
+seen_titles = set()
 
 for feed_url in FEEDS:
 
@@ -61,6 +62,8 @@ for feed_url in FEEDS:
         for item in root.findall(".//item"):
 
             title_element = item.find("title")
+            link_element = item.find("link")
+            source_element = item.find("source")
 
             if title_element is None:
                 continue
@@ -69,9 +72,29 @@ for feed_url in FEEDS:
                 title_element.text or ""
             )
 
-            if title and title not in topics:
+            if not title:
+                continue
 
-                topics.append(title)
+            if title in seen_titles:
+                continue
+
+            url = ""
+
+            if link_element is not None:
+                url = link_element.text or ""
+
+            source = ""
+
+            if source_element is not None:
+                source = source_element.text or ""
+
+            topics.append({
+                "title": title,
+                "source": source,
+                "url": url
+            })
+
+            seen_titles.add(title)
 
     except Exception as e:
 
@@ -110,7 +133,7 @@ BLOCKED_WORDS = [
 
 def is_relevant(topic):
 
-    topic_lower = topic.lower()
+    topic_lower = topic["title"].lower()
 
     for word in BLOCKED_WORDS:
 
@@ -127,7 +150,10 @@ topics = [
 ]
 
 
+# -----------------------------------
 # Keep first 20 relevant topics
+# -----------------------------------
+
 topics = topics[:20]
 
 
@@ -156,6 +182,10 @@ with open(
     )
 
 
+# -----------------------------------
+# Display results
+# -----------------------------------
+
 print("-----------------------------------")
 print("TOPICS DISCOVERED")
 print("-----------------------------------")
@@ -166,5 +196,13 @@ for number, topic in enumerate(
 ):
 
     print(
-        f"{number}. {topic}"
+        f"{number}. {topic['title']}"
+    )
+
+    print(
+        f"   Source: {topic['source']}"
+    )
+
+    print(
+        f"   URL: {topic['url']}"
     )
