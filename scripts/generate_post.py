@@ -1,6 +1,8 @@
 import os
 import json
 import time
+import re
+from html import escape
 from google import genai
 
 # -----------------------------------
@@ -15,7 +17,6 @@ if not API_KEY:
 client = genai.Client(api_key=API_KEY)
 
 
-
 # -----------------------------------
 # Models
 # -----------------------------------
@@ -25,6 +26,7 @@ MODELS = [
     "gemini-3.5-flash",
     "gemini-3.5-flash-lite",
 ]
+
 
 # -----------------------------------
 # Select topic from discovered topics
@@ -45,8 +47,15 @@ def select_topic():
             "No discovered topics available."
         )
 
+    # Support the new topic format:
+    # {
+    #   "title": "...",
+    #   "source": "...",
+    #   "url": "..."
+    # }
+
     topic_list = "\n".join(
-        f"{i + 1}. {topic}"
+        f"{i + 1}. {topic['title']}"
         for i, topic in enumerate(topics)
     )
 
@@ -89,7 +98,7 @@ Topics:
 Return ONLY valid JSON:
 
 {{
-  "selected_topic": "exact topic from the list"
+  "selected_topic": "exact topic title from the list"
 }}
 """
 
@@ -113,9 +122,19 @@ Return ONLY valid JSON:
 
     selection = json.loads(result)
 
-    selected_topic = selection["selected_topic"]
+    selected_title = selection["selected_topic"]
 
-    if selected_topic not in topics:
+    selected_topic = None
+
+    for topic in topics:
+
+        if topic["title"] == selected_title:
+
+            selected_topic = topic
+            break
+
+    if selected_topic is None:
+
         raise RuntimeError(
             "Gemini selected a topic that was not in topics.json."
         )
@@ -123,12 +142,21 @@ Return ONLY valid JSON:
     print("-----------------------------------")
     print("SELECTED TOPIC")
     print("-----------------------------------")
-    print(selected_topic)
+    print(selected_topic["title"])
+
+    print("SOURCE")
+    print(selected_topic["source"])
+
+    print("URL")
+    print(selected_topic["url"])
 
     return selected_topic
 
 
-TOPIC = select_topic()
+TOPIC_DATA = select_topic()
+
+TOPIC = TOPIC_DATA["title"]
+
 
 # -----------------------------------
 # Prompt
@@ -142,6 +170,11 @@ You are an expert technology writer.
 Write a useful, accurate and original article about:
 
 {TOPIC}
+
+The topic was discovered from this source:
+
+Source: {TOPIC_DATA["source"]}
+URL: {TOPIC_DATA["url"]}
 
 Target audience:
 YouTube creators and digital content creators.
@@ -249,7 +282,6 @@ def generate_article():
 
                     time.sleep(10)
 
-
     raise RuntimeError(
         "All Gemini models failed."
     )
@@ -287,17 +319,40 @@ print(
         indent=2
     )
 )
-import re
-from html import escape
 
+
+# -----------------------------------
+# Create slug
+# -----------------------------------
 
 def create_slug(title):
+
     slug = title.lower()
-    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
-    slug = re.sub(r"\s+", "-", slug)
-    slug = re.sub(r"-+", "-", slug)
+
+    slug = re.sub(
+        r"[^a-z0-9\s-]",
+        "",
+        slug
+    )
+
+    slug = re.sub(
+        r"\s+",
+        "-",
+        slug
+    )
+
+    slug = re.sub(
+        r"-+",
+        "-",
+        slug
+    )
+
     return slug.strip("-")
 
+
+# -----------------------------------
+# Create article HTML
+# -----------------------------------
 
 def create_article_html(article):
 
@@ -366,11 +421,27 @@ def create_article_html(article):
 
 <header>
 
-    <div class="container">
+    <div class="container header-inner">
 
-        <h1>AI & Technology Hub</h1>
+        <a href="../index.html" class="logo">
+            AI <span>&</span> Technology Hub
+        </a>
 
-        <p>AI, technology and digital insights.</p>
+        <nav>
+
+            <a href="../index.html">
+                Home
+            </a>
+
+            <a href="../index.html#articles">
+                Latest
+            </a>
+
+            <a href="../index.html#about">
+                About
+            </a>
+
+        </nav>
 
     </div>
 
@@ -418,10 +489,14 @@ def create_article_html(article):
 
 <footer>
 
-    <div class="container">
+    <div class="container footer-inner">
 
         <p>
             © 2026 AI & Technology Hub
+        </p>
+
+        <p>
+            AI • Technology • Innovation
         </p>
 
     </div>
@@ -459,7 +534,10 @@ with open(
 print("-----------------------------------")
 print("HTML ARTICLE CREATED")
 print("-----------------------------------")
+
 print(article_path)
+
+
 # -----------------------------------
 # Update homepage
 # -----------------------------------
@@ -475,7 +553,10 @@ def update_homepage():
             if not filename.endswith(".html"):
                 continue
 
-            filepath = os.path.join("posts", filename)
+            filepath = os.path.join(
+                "posts",
+                filename
+            )
 
             with open(
                 filepath,
@@ -485,7 +566,7 @@ def update_homepage():
 
                 content = f.read()
 
-            # Get title from HTML
+            # Get title
             match = re.search(
                 r"<title>(.*?)</title>",
                 content,
@@ -493,11 +574,18 @@ def update_homepage():
             )
 
             if match:
+
                 title = match.group(1)
+
             else:
+
                 title = filename.replace(
-                    ".html", ""
-                ).replace("-", " ").title()
+                    ".html",
+                    ""
+                ).replace(
+                    "-",
+                    " "
+                ).title()
 
             # Get description
             description_match = re.search(
@@ -507,9 +595,14 @@ def update_homepage():
             )
 
             if description_match:
+
                 description = description_match.group(1)
+
             else:
-                description = "Read the latest AI and technology article."
+
+                description = (
+                    "Read the latest AI and technology article."
+                )
 
             posts.append({
                 "title": title,
@@ -532,6 +625,10 @@ def update_homepage():
 
         cards += f"""
         <article class="card">
+
+            <div class="card-category">
+                AI & Technology
+            </div>
 
             <h3>
                 {post["title"]}
@@ -566,7 +663,10 @@ def update_homepage():
     <title>AI & Technology Hub</title>
 
     <meta name="description"
-          content="AI tools, technology, tutorials and digital insights.">
+          content="AI tools, technology, tutorials and digital insights for creators and developers.">
+
+    <meta name="robots"
+          content="index, follow">
 
     <link rel="stylesheet"
           href="style.css">
@@ -577,36 +677,95 @@ def update_homepage():
 
 <header>
 
-    <div class="container">
+    <div class="container header-inner">
 
-        <h1>AI & Technology Hub</h1>
+        <a href="index.html" class="logo">
+            AI <span>&</span> Technology Hub
+        </a>
 
-        <p>
-            AI tools, technology, tutorials and insights.
-        </p>
+        <nav>
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="#articles">
+                Latest
+            </a>
+
+            <a href="#about">
+                About
+            </a>
+
+        </nav>
 
     </div>
 
 </header>
 
 
-<main class="container">
+<main>
 
     <section class="hero">
 
-        <h2>Latest Articles</h2>
+        <div class="container">
 
-        <p>
-            Explore the latest developments in AI
-            and technology.
-        </p>
+            <div class="hero-label">
+                AI & Technology
+            </div>
+
+            <h1>
+                The latest in AI, technology and digital innovation.
+            </h1>
+
+            <p>
+                Practical insights, tools, tutorials and technology news
+                for creators, developers and curious minds.
+            </p>
+
+        </div>
 
     </section>
 
 
-    <section class="articles">
+    <section class="container" id="articles">
 
-        {cards}
+        <div class="section-header">
+
+            <h2>
+                Latest Articles
+            </h2>
+
+        </div>
+
+
+        <section class="articles">
+
+            {cards}
+
+        </section>
+
+    </section>
+
+
+    <section class="container" id="about">
+
+        <div class="hero">
+
+            <div class="hero-label">
+                About
+            </div>
+
+            <h2>
+                AI & Technology Hub
+            </h2>
+
+            <p>
+                Exploring useful developments in artificial intelligence,
+                software, automation, digital tools and emerging technology.
+            </p>
+
+        </div>
 
     </section>
 
@@ -615,10 +774,14 @@ def update_homepage():
 
 <footer>
 
-    <div class="container">
+    <div class="container footer-inner">
 
         <p>
             © 2026 AI & Technology Hub
+        </p>
+
+        <p>
+            AI • Technology • Innovation
         </p>
 
     </div>
