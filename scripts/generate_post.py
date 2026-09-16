@@ -185,3 +185,176 @@ print(
         indent=2
     )
 )
+import re
+from html import escape
+
+
+def create_slug(title):
+    slug = title.lower()
+    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
+    slug = re.sub(r"\s+", "-", slug)
+    slug = re.sub(r"-+", "-", slug)
+    return slug.strip("-")
+
+
+def create_article_html(article):
+
+    title = escape(article["title"])
+    description = escape(article["description"])
+    category = escape(article["category"])
+    introduction = escape(article["introduction"])
+    conclusion = escape(article["conclusion"])
+
+    sections_html = ""
+
+    for section in article["sections"]:
+
+        heading = escape(section["heading"])
+        content = escape(section["content"])
+
+        paragraphs = content.split("\n")
+
+        content_html = ""
+
+        for paragraph in paragraphs:
+
+            if paragraph.strip():
+
+                content_html += (
+                    f"<p>{paragraph.strip()}</p>\n"
+                )
+
+        sections_html += f"""
+        <section>
+            <h2>{heading}</h2>
+            {content_html}
+        </section>
+        """
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{title}</title>
+
+    <meta name="description"
+          content="{description}">
+
+    <meta property="og:title"
+          content="{title}">
+
+    <meta property="og:description"
+          content="{description}">
+
+    <meta name="robots"
+          content="index, follow">
+
+    <link rel="stylesheet"
+          href="../style.css">
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="container">
+
+        <h1>AI & Technology Hub</h1>
+
+        <p>AI, technology and digital insights.</p>
+
+    </div>
+
+</header>
+
+
+<main class="container article-page">
+
+    <article>
+
+        <div class="category">
+            {category}
+        </div>
+
+        <h1>{title}</h1>
+
+        <p class="article-description">
+            {description}
+        </p>
+
+        <div class="article-content">
+
+            <p>
+                {introduction}
+            </p>
+
+            {sections_html}
+
+            <section>
+
+                <h2>Conclusion</h2>
+
+                <p>
+                    {conclusion}
+                </p>
+
+            </section>
+
+        </div>
+
+    </article>
+
+</main>
+
+
+<footer>
+
+    <div class="container">
+
+        <p>
+            © 2026 AI & Technology Hub
+        </p>
+
+    </div>
+
+</footer>
+
+</body>
+
+</html>
+"""
+
+    return html
+
+
+# -----------------------------------
+# Create HTML article
+# -----------------------------------
+
+slug = create_slug(article["title"])
+
+os.makedirs("posts", exist_ok=True)
+
+article_path = f"posts/{slug}.html"
+
+html = create_article_html(article)
+
+with open(
+    article_path,
+    "w",
+    encoding="utf-8"
+) as f:
+
+    f.write(html)
+
+print("-----------------------------------")
+print("HTML ARTICLE CREATED")
+print("-----------------------------------")
+print(article_path)
