@@ -34,7 +34,7 @@ jobs:
           git config user.name "AI Article Bot"
           git config user.email "actions@github.com"
 
-          ggit add generated/ posts/ index.html
+          git add generated/ posts/ index.html
 
           git diff --cached --quiet || git commit -m "Generate AI article"
 
