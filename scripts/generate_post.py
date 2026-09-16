@@ -14,8 +14,6 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
-TOPIC = "Best AI Video Generators for YouTube Creators"
-
 
 # -----------------------------------
 # Models
@@ -27,6 +25,109 @@ MODELS = [
     "gemini-3.5-flash-lite",
 ]
 
+# -----------------------------------
+# Select topic from discovered topics
+# -----------------------------------
+
+def select_topic():
+
+    with open(
+        "generated/topics.json",
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        topics = json.load(f)
+
+    if not topics:
+        raise RuntimeError(
+            "No discovered topics available."
+        )
+
+    topic_list = "\n".join(
+        f"{i + 1}. {topic}"
+        for i, topic in enumerate(topics)
+    )
+
+    prompt = f"""
+You are the editorial director of an AI and technology website.
+
+Choose ONE topic from the list below.
+
+The website focuses on:
+- Artificial intelligence
+- AI tools
+- AI models
+- AI video and image generation
+- Automation
+- Software
+- Productivity technology
+- Developer technology
+- Cybersecurity
+- Consumer technology
+
+Avoid:
+- Politics
+- Elections
+- Political personalities
+- Political arguments
+- General wars or geopolitical news
+- Celebrity gossip
+- Topics unrelated to technology
+
+Choose the topic that has the strongest potential for a useful,
+evergreen or timely technology article for digital creators.
+
+Do NOT create a new topic.
+Choose ONLY one topic from the supplied list.
+
+Topics:
+
+{topic_list}
+
+Return ONLY valid JSON:
+
+{{
+  "selected_topic": "exact topic from the list"
+}}
+"""
+
+    response = client.models.generate_content(
+        model=MODELS[0],
+        contents=prompt
+    )
+
+    result = response.text.strip()
+
+    if result.startswith("```json"):
+        result = result[7:]
+
+    elif result.startswith("```"):
+        result = result[3:]
+
+    if result.endswith("```"):
+        result = result[:-3]
+
+    result = result.strip()
+
+    selection = json.loads(result)
+
+    selected_topic = selection["selected_topic"]
+
+    if selected_topic not in topics:
+        raise RuntimeError(
+            "Gemini selected a topic that was not in topics.json."
+        )
+
+    print("-----------------------------------")
+    print("SELECTED TOPIC")
+    print("-----------------------------------")
+    print(selected_topic)
+
+    return selected_topic
+
+
+TOPIC = select_topic()
 
 # -----------------------------------
 # Prompt
