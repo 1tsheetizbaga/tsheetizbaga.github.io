@@ -25,14 +25,6 @@ jobs:
 
       - name: Discover topics
         run: |
-           python scripts/discover_topic.py
-
-            - name: Discover topics
-        run: |
-          python scripts/discover_topic.py
-
-            - name: Discover topics
-        run: |
           python scripts/discover_topic.py
 
       - name: Generate article
